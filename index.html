@@ -18,8 +18,12 @@
     const tg = window.Telegram.WebApp;
     tg.ready();
 
+    // параметр из ссылки поста: t.me/<бот>/<app>?startapp=XXX
+    const param = tg.initDataUnsafe.start_param
+      || new URLSearchParams(location.search).get("tgWebAppStartParam");
+
     function go(target) {
-      tg.openTelegramLink("https://t.me/" + target + "?start=from_channel");
+      tg.openTelegramLink("https://t.me/" + target + (param ? "?start=" + param : ""));
       setTimeout(() => tg.close(), 300);
     }
 
