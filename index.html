@@ -24,7 +24,6 @@
 
     function go(target) {
       tg.openTelegramLink("https://t.me/" + target + (param ? "?start=" + param : ""));
-      setTimeout(() => tg.close(), 300);
     }
 
     fetch("targets.json?ts=" + Date.now(), { cache: "no-store" })
@@ -35,7 +34,7 @@
         const btn = document.getElementById("btn");
         btn.hidden = false;
         btn.onclick = () => go(target);
-        go(target);
+        setTimeout(() => go(target), 500);
       })
       .catch(() => { document.getElementById("status").textContent = "Не удалось загрузить конфиг"; });
   </script>
