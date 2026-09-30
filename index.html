@@ -3,45 +3,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
   <style>
-    body { margin: 0; padding: 24px; font-family: sans-serif; text-align: center;
-           background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); }
-    button { padding: 12px 24px; font-size: 16px; border: 0; border-radius: 8px;
-             background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #fff); }
+    body { margin: 0; display: grid; place-items: center; height: 100vh;
+           font-family: sans-serif; background: #fff; color: #222; }
+    a { display: inline-block; padding: 12px 28px; font-size: 16px; border-radius: 8px;
+        background: #2481cc; color: #fff; text-decoration: none; }
+    p { color: #888; }
   </style>
 </head>
 <body>
-  <p id="status">Открываем…</p>
-  <button id="btn" hidden>Открыть бота</button>
+  <p>Открываем…</p>
+  <a id="btn" hidden>Открыть бота</a>
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-
-    // параметр из ссылки поста: t.me/<бот>/<app>?startapp=XXX
-    const param = tg.initDataUnsafe.start_param
-      || new URLSearchParams(location.search).get("tgWebAppStartParam");
-
-    function go(target) {
-      const q = param ? "?start=" + param : "";
-      tg.openTelegramLink("https://t.me/" + target + q);
-      if (tg.platform === "android") {
-        // Android не выполняет openTelegramLink без жеста — пробуем прямую навигацию
-        setTimeout(() => location.replace("tg://resolve?domain=" + target + (param ? "&start=" + param : "")), 300);
-      }
-    }
+    const q = new URLSearchParams(location.search);
+    const param = q.get("c") || q.get("start") || "";
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
     fetch("targets.json?ts=" + Date.now(), { cache: "no-store" })
       .then(r => r.json())
       .then(cfg => {
         const target = cfg.target_bot;
-        // резерв на случай, если клиент не даст перейти без клика внутри Mini App
+        const tme = "https://t.me/" + target + (param ? "?start=" + param : "");
+        const tg  = "tg://resolve?domain=" + target + (param ? "&start=" + param : "");
+
         const btn = document.getElementById("btn");
-        btn.hidden = false;
-        btn.onclick = () => go(target);
-        setTimeout(() => go(target), 500);
+        btn.href = tme;
+        setTimeout(() => { btn.hidden = false; }, 1500);
+
+        if (isMobile) {
+          // универсальная ссылка: ОС сама откроет приложение Telegram
+          location.replace(tme);
+        } else {
+          // ПК: прыжок напрямую в клиент Telegram без лендинга t.me
+          location.replace(tg);
+        }
       })
-      .catch(() => { document.getElementById("status").textContent = "Не удалось загрузить конфиг"; });
+      .catch(() => {
+        document.querySelector("p").textContent = "Не удалось загрузить конфиг";
+      });
   </script>
 </body>
 </html>
