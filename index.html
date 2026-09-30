@@ -23,7 +23,12 @@
       || new URLSearchParams(location.search).get("tgWebAppStartParam");
 
     function go(target) {
-      tg.openTelegramLink("https://t.me/" + target + (param ? "?start=" + param : ""));
+      const q = param ? "?start=" + param : "";
+      tg.openTelegramLink("https://t.me/" + target + q);
+      if (tg.platform === "android") {
+        // Android не выполняет openTelegramLink без жеста — пробуем прямую навигацию
+        setTimeout(() => location.replace("tg://resolve?domain=" + target + (param ? "&start=" + param : "")), 300);
+      }
     }
 
     fetch("targets.json?ts=" + Date.now(), { cache: "no-store" })
