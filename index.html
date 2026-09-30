@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+  <style>
+    body { margin: 0; padding: 24px; font-family: sans-serif; text-align: center;
+           background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); }
+    button { padding: 12px 24px; font-size: 16px; border: 0; border-radius: 8px;
+             background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #fff); }
+  </style>
+</head>
+<body>
+  <p id="status">Открываем…</p>
+  <button id="btn" hidden>Открыть бота</button>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+
+    function go(target) {
+      tg.openTelegramLink("https://t.me/" + target + "?start=from_channel");
+      setTimeout(() => tg.close(), 300);
+    }
+
+    fetch("targets.json?ts=" + Date.now(), { cache: "no-store" })
+      .then(r => r.json())
+      .then(cfg => {
+        const target = cfg.target_bot;
+        // резерв на случай, если клиент не даст перейти без клика внутри Mini App
+        const btn = document.getElementById("btn");
+        btn.hidden = false;
+        btn.onclick = () => go(target);
+        go(target);
+      })
+      .catch(() => { document.getElementById("status").textContent = "Не удалось загрузить конфиг"; });
+  </script>
+</body>
+</html>
